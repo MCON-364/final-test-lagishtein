@@ -28,10 +28,10 @@ import java.util.stream.Collectors;
  */
 public class ConcurrentAuctionTracker {
 
-    //TODO - Initialize thread-safe sorted Set implementation to store bids in descending order by amount.
-    Set<BidEntry> bids;
+    //TODO - Initialize thread-safe sorted Set implementation to store bids in descending order by amount and call
+    private  final ConcurrentSkipListSet<BidEntry> bids = new ConcurrentSkipListSet<>();
     //TODO - Initialize a thread-safe counter to track total bid submissions and call it totalBids.
-
+    AtomicInteger counter = new AtomicInteger(0);
 
     /**
      * Adds a bid entry to the tracker thread-safely and increments the counter.
@@ -39,7 +39,8 @@ public class ConcurrentAuctionTracker {
      * @param entry the bid entry to add
      */
     public void submitBid(BidEntry entry) {
-        //TODO - implement this method
+       bids.add(entry);
+       counter.incrementAndGet();
     }
 
     /**
@@ -49,16 +50,14 @@ public class ConcurrentAuctionTracker {
      * @return immutable top-n list
      */
     public List<BidEntry> getTopN(int n) {
-        //TODO - implement this method
-        return null;
+        return bids.stream().limit(n).toList();
     }
 
     /**
      * Returns how many times submitBid has been called since creation.
      */
     public int getTotalBids() {
-        //TODO - implement this method
-        return 0;
+        return counter.get();
     }
 
     /**
@@ -72,7 +71,19 @@ public class ConcurrentAuctionTracker {
      */
     public void runSimulation(List<String> bidders, int bidsEach)
             throws InterruptedException {
-        //TODO - implement this method
+        ExecutorService executor = Executors.newFixedThreadPool(bidders.size());
+        Random random = new Random();
+        for (String bidder : bidders) {
+            executor.submit(() -> {
+                for (int i  = 0; i < bidsEach; i++) {
+                    BidEntry bid = new BidEntry(bidder, random.nextInt(), System.currentTimeMillis());
+                    submitBid(bid);
+                }
+            });
+        }
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.MINUTES);
+
     }
 }
 

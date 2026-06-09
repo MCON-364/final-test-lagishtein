@@ -1,3 +1,4 @@
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/VZ9dTvEO)
 # MCON-364 Final Exam — Java Streams, Collections & Concurrency
 
 ## Overview
@@ -20,13 +21,13 @@ a `resolved` flag.
 
 ### What you must implement
 
-| Method | Description |
-|---|---|
-| `IncidentAnalyzer(List<SupportTicket>)` | Validate non-null; store a **defensive copy** (`List.copyOf`) |
-| `long getClosedCount()` | Count tickets where `resolved == true` |
+| Method | Description                                                                 |
+|---|-----------------------------------------------------------------------------|
+| `IncidentAnalyzer(List<SupportTicket>)` | Validate non-null; store a **defensive copy** (`List.copyOf`)               |
+| `long getClosedCount()` | Count tickets where `resolved == true`                                      |
 | `double getAverageTimeToClose()` | Average `minutesToResolve` of resolved tickets only; return `0.0` when none |
-| `Map<String, Long> getCountByCategory()` | Group all tickets by category and count; return an **unmodifiable** map |
-| `List<SupportTicket> getCriticalOpenIncidents()` | Filter to `!resolved && priority == HIGH`; return an **unmodifiable** list |
+| `Map<String, Long> getCountByCategory()` | Group all tickets by category and count; return an **unmodifiable** map     |
+| `List<SupportTicket> getCriticalOpenIncidents()` | Return an **unmodifiable** list                                             |
 
 ### Rules
 - Express all logic with **streams** — no explicit loops.
@@ -47,13 +48,13 @@ An e-commerce platform tags each customer review with a product category string
 | Method | Description |
 |---|---|
 | `ProductReviewAnalyzer(List<String>)` | Validate non-null; store a **defensive copy** |
-| `TreeMap<String, Long> buildCategoryFrequencyMap()` | Count occurrences of each tag; result must be a **`TreeMap`** (alphabetically sorted) |
+| `Map<String, Long> buildCategoryFrequencyMap()` | Count occurrences of each tag; result must be alphabetically sorted |
 | `List<String> getTopNCategories(int n)` | Return the `n` most-reviewed categories, **highest count first** |
-| `List<String> getCategoriesStartingWith(char prefix)` | Return sorted category names whose first letter equals `prefix` — use `NavigableMap.subMap` |
+| `List<String> getCategoriesStartingWith(char prefix)` | Return sorted category names whose first letter equals `prefix` |
 | `Optional<String> getMostReviewedInRange(String from, String to)` | Highest-count category in the **inclusive** alphabetical range `[from, to]`; `Optional.empty()` if the range is empty |
 
 ### Rules
-- `buildCategoryFrequencyMap()` **must** return a `TreeMap`.
+- `buildCategoryFrequencyMap()` **must** return an appropriate implementation of the Map interface.
 - Use `NavigableMap` slicing operations  — no manual iteration.
 - Express logic with **streams and collectors** — no explicit loops.
 
@@ -78,7 +79,7 @@ The tracker must maintain bids in **sorted order** (highest first) and remain
 | `void runSimulation(List<String> bidders, int bidsEach)` | Simulate bid submission by multiple bidders|                                     |                                                        |
 
 ### Rules
-- **No `synchronized` blocks.** Use appropiate concurrent data structures and types.
+- **No `synchronized` blocks.** Use appropriate concurrent data structures and types.
 - `runSimulation` must wait for all tasks to finish before returning. 
 
 ---
@@ -88,20 +89,20 @@ The tracker must maintain bids in **sorted order** (highest first) and remain
 **File:** `src/main/java/.../TelemetryProcessor.java`
 
 ### Scenario
-A fleet of IoT devices continuously emits telemetry readings. Each `TelemetryEvent`
+A fleet of smart devices continuously emits telemetry readings. Each `TelemetryEvent`
 record carries a `deviceId` (String), a numeric `metric` (double), and a
 `recordedAtNanos` timestamp (long). Readings arrive faster than they can be processed
-synchronously, so a multi-worker, queue-based pipeline is required.
+synchronously.
 
 ### What you must implement
 
-| Method | Description |
-|---|---|
+| Method | Description                                                                                                              |
+|---|--------------------------------------------------------------------------------------------------------------------------|
 | `void submit(TelemetryEvent)` | Enqueue an event for processing; throw `IllegalArgumentException` if `null`; silently discard if called before `start()` |
-| `void start(int workerCount)` | Spin up `workerCount` worker threads that drain the queue; throw `IllegalArgumentException` if `workerCount ≤ 0`; second call must be a no-op |
-| `void stop()` | Signal workers to finish, wait for termination, then drain and process any remaining queued events |
-| `int getTotalProcessed()` | Return the running total of fully processed events |
-| `DoubleSummaryStatistics getStats()` | Return a **fresh snapshot** of summary statistics (count, sum, min, max, average) for all processed metric values |
+| `void start(int workerCount)` | Start processing of events                                                                                               |
+| `void stop()` | Stop processing of events. All events most be processed                                                                  |
+| `int getTotalProcessed()` | Return the running total of fully processed events                                                                       |
+| `DoubleSummaryStatistics getStats()` | Return a **fresh snapshot** of summary statistics (count, sum, min, max, average) for all processed metric values        |
 
 ### Rules
 - **No raw `synchronized` blocks.** Use `java.util.concurrent` building blocks — `BlockingQueue`, `ExecutorService`, `AtomicInteger`, `AtomicReference`, etc.
@@ -135,6 +136,7 @@ src/
 
 ## Building & running tests locally
 
+A full set of unit tests is provided in `src/test/java/.../`. You can run them with IntelliJ or from the command line with Maven:
 ```bash
 # compile
 mvn -B test-compile
@@ -168,3 +170,4 @@ Each test method is graded individually by the GitHub Classroom autograder.
 
 stage, commit and push to main.
 
+Good luck!

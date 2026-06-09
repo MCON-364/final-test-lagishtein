@@ -28,7 +28,7 @@ import java.util.stream.*;
 public class ProductReviewAnalyzer {
 
     //TODO - uncomment this field and initialize it in the constructor to store categories.
-    //private final List<String> categories;
+    private final List<String> categories;
 
     /**
      * Store the category tags that this analyzer will examine.
@@ -36,7 +36,7 @@ public class ProductReviewAnalyzer {
      * If the input list is null, throw an IllegalArgumentException.
      */
     public ProductReviewAnalyzer(List<String> categories) {
-      //TODO - implement this constructor
+       this.categories = List.copyOf(Objects.requireNonNull(categories));
     }
 
     /**
@@ -46,8 +46,7 @@ public class ProductReviewAnalyzer {
      * @return sorted frequency map
      */
     public Map<String, Long> buildCategoryFrequencyMap() {
-        //TODO - implementthis method
-        return null;
+        return categories.stream().collect(Collectors.groupingBy(String::toLowerCase,TreeMap::new, Collectors.counting()));
     }
 
     /**
@@ -57,8 +56,10 @@ public class ProductReviewAnalyzer {
      * @return list of category names, most reviewed first
      */
     public List<String> getTopNCategories(int n) {
-        //TODO - implement this method
-        return null;
+            Map<String, Long> frequencyMap = buildCategoryFrequencyMap();
+            return frequencyMap.entrySet().stream().
+                    sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).limit(n).
+                    map(Map.Entry::getKey).toList();
     }
 
     /**
@@ -71,22 +72,25 @@ public class ProductReviewAnalyzer {
      * @return sorted list of matching category names
      */
     public List<String> getCategoriesStartingWith(char prefix) {
-        //TODO - implement this method
-        return null;
+        char fromPrefix = prefix;
+        String from = String.valueOf(prefix);
+        char toPrefix = (char)(prefix + 1);
+        String to = String.valueOf(toPrefix);
+        NavigableSet<String> sortedSetOfCategories = new TreeSet<>(this.categories);
+        return new ArrayList<String>(sortedSetOfCategories.subSet(from, to));
+
     }
 
     /**
      * Finds the most reviewed category in the alphabetical range [from, to] inclusive.
-     *
-     * Hint: use subMap(from, true, to, true) on the frequency map, then stream its
-     * entries and find the max by value.
      *
      * @param from lower bound category name (inclusive)
      * @param to   upper bound category name (inclusive)
      * @return Optional containing the most reviewed category in range, or empty if none
      */
     public Optional<String> getMostReviewedInRange(String from, String to) {
-        //TODO - implement this method
-        return Optional.empty();
+        TreeMap<String, Long> frequencyMap = (TreeMap<String, Long>) buildCategoryFrequencyMap();
+        NavigableMap<String, Long> partial = frequencyMap.subMap(from,true, to, true);
+        return partial.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey);
     }
 }

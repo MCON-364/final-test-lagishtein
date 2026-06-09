@@ -1,9 +1,7 @@
 package edu.touro.las.mcon364.final_test;
 
 import java.util.DoubleSummaryStatistics;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -58,8 +56,23 @@ public class TelemetryProcessor {
      * @throws IllegalArgumentException if event is null
      */
     public void submit(TelemetryEvent event) {
-        //TODO - implement this method
+        if (running) {
+            queue.offer(event);
+        }
     }
+    private void process(TelemetryEvent event) {
+        // Update the total processed count
+        totalProcessed.incrementAndGet();
+        stats.updateAndGet(existing -> {
+            DoubleSummaryStatistics updated = new DoubleSummaryStatistics();
+            // Combine the existing stats with the new event
+            updated.combine(existing);
+            // Update the stats with the new event.
+            updated.accept(event.metric());;
+            return updated;
+        });
+    }
+
 
     /**
      * Start {@code workerCount} worker threads that drain and process the queue.
@@ -75,7 +88,25 @@ public class TelemetryProcessor {
      * @throws IllegalArgumentException if workerCount ≤ 0
      */
     public void start(int workerCount) {
-        //TODO - implement this method
+        ExecutorService executorService =  Executors.newFixedThreadPool(workerCount);
+        running = true;
+
+        for  (int i = 0; i < workerCount; i++) {
+            executorService.submit(() -> {
+                if (running &&  !queue.isEmpty()) {
+                    try {
+                        TelemetryEvent event = queue.poll(100, TimeUnit.MILLISECONDS);
+                        if  (event != null) {
+                            process(event);
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+        }
+
     }
 
     /**
@@ -85,15 +116,21 @@ public class TelemetryProcessor {
      * @throws InterruptedException if the calling thread is interrupted while waiting
      */
     public void stop() throws InterruptedException {
-        //TODO - implement this method
+        running = false;
+        if(executor != null) {
+            executor.shutdown();
+            executor.awaitTermination(30, TimeUnit.SECONDS);
+        }
+        while(!queue.isEmpty()) {
+            process(queue.poll());
+        }
     }
 
     /**
      * Return the total number of events that have been fully processed.
      */
     public int getTotalProcessed() {
-        //TODO - implement this method
-        return 0;
+        return  totalProcessed.get();
     }
 
     /**
@@ -105,7 +142,8 @@ public class TelemetryProcessor {
      *
      */
     public DoubleSummaryStatistics getStats() {
-        //TODO - implement this method
-        return null;
+        DoubleSummaryStatistics snapshot = new DoubleSummaryStatistics();
+        snapshot.combine(stats.get());
+        return snapshot;
     }
 }
